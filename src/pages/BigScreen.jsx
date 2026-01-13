@@ -44,10 +44,23 @@ const BatteryOverlay = ({ percent }) => {
       </div>
 
       <div className="absolute inset-0 flex items-center justify-center z-30">
-          <div className="bg-black/40 backdrop-blur-sm px-6 py-2 rounded-xl border border-brand-green/20 shadow-2xl">
-            <span className="text-6xl font-black tracking-tighter text-brand-green drop-shadow-[0_0_20px_rgba(0,255,127,0.8)] tabular-nums">
-                {Math.min(100, Math.round(percent * 100) / 100).toFixed(2)}<span className="text-3xl align-top ml-1">%</span>
-            </span>
+          <div className="flex flex-col items-center">
+            <div className="bg-black/40 backdrop-blur-sm px-6 py-2 rounded-xl border border-brand-green/20 shadow-2xl mb-2">
+                <span className="text-6xl font-black tracking-tighter text-brand-green drop-shadow-[0_0_20px_rgba(0,255,127,0.8)] tabular-nums">
+                    {Math.min(100, Math.round(percent * 100) / 100).toFixed(2)}<span className="text-3xl align-top ml-1">%</span>
+                </span>
+            </div>
+            
+            {/* Energy Loading Hint */}
+            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-green/10 border border-brand-green/30 backdrop-blur-md animate-[pulse_2s_infinite]">
+                <div className="relative w-2 h-2">
+                    <div className="absolute inset-0 rounded-full bg-brand-green animate-ping opacity-75"></div>
+                    <div className="relative rounded-full h-2 w-2 bg-brand-green"></div>
+                </div>
+                <span className="text-brand-green text-[1.2vh] font-bold tracking-widest shadow-black drop-shadow-md">
+                    即将满值，扫码加速
+                </span>
+            </div>
           </div>
       </div>
     </div>
@@ -57,9 +70,12 @@ const BatteryOverlay = ({ percent }) => {
 const LiveLogs = ({ logs }) => {
   return (
     <div className="flex flex-col gap-3 text-brand-text-blue text-[1.5vmin] font-mono overflow-hidden h-full">
-        <div className="shrink-0 flex items-center gap-2 border-b border-white/10 pb-2">
-            <div className="w-[1vmin] h-[1vmin] rounded-full bg-brand-green animate-pulse" />
-            <span className="text-white font-bold tracking-wider text-[1.8vmin]">LIVE ENERGY LOSS</span>
+        <div className="shrink-0 flex flex-col gap-1 border-b border-white/10 pb-2">
+            <div className="flex items-center gap-2">
+                <div className="w-[1vmin] h-[1vmin] rounded-full bg-brand-green animate-pulse" />
+                <span className="text-white font-bold tracking-wider text-[1.8vmin]">实时充电参与者</span>
+            </div>
+
         </div>
         <div className="flex-1 overflow-hidden relative">
             <div className="flex flex-col gap-[1vmin] w-full transition-all duration-300">
@@ -84,6 +100,8 @@ export default function BigScreen() {
   const [logs, setLogs] = useState([]);
   const [socket, setSocket] = useState(null);
   const [joinUrl, setJoinUrl] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
+  const [triggerName, setTriggerName] = useState('');
 
   useEffect(() => {
     // Connect to Socket.io server
@@ -134,7 +152,8 @@ export default function BigScreen() {
 
     newSocket.on('completion', (data) => {
         // Trigger massive effect
-        alert(`ENERGY FULL! Triggered by ${data.name}`);
+        setIsComplete(true);
+        setTriggerName(data.name || 'Anonymous');
     });
 
     return () => newSocket.close();
@@ -142,6 +161,32 @@ export default function BigScreen() {
 
   return (
     <div className="w-screen h-screen bg-brand-black flex items-center justify-center overflow-hidden relative font-sans">
+      {/* Celebration Overlay */}
+      {isComplete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md animate-[fadeIn_0.5s_ease-out]">
+            <div className="relative flex flex-col items-center justify-center">
+                {/* Rays of Light */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200vmax] h-[200vmax] animate-[spin_10s_linear_infinite]">
+                    <div className="w-full h-full bg-[conic-gradient(from_0deg,transparent_0deg,rgba(0,255,127,0.2)_20deg,transparent_40deg,rgba(255,215,0,0.2)_60deg,transparent_80deg)]" />
+                </div>
+                
+                <div className="relative z-10 text-center space-y-8 animate-[scaleUp_0.8s_cubic-bezier(0.175,0.885,0.32,1.275)]">
+                    <div className="text-brand-green text-[10vmin] font-black tracking-tighter drop-shadow-[0_0_50px_rgba(0,255,127,0.8)]">
+                        ENERGY FULL
+                    </div>
+                    <div className="text-white text-[5vmin] font-bold tracking-widest">
+                        充能完成
+                    </div>
+                    {triggerName && (
+                        <div className="text-brand-gold text-[3vmin] font-mono mt-4 animate-pulse">
+                            关键充能者: {triggerName}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+      )}
+
       {/* Particles */}
       {particles.map(p => (
           <div key={p.id} 
@@ -168,9 +213,9 @@ export default function BigScreen() {
       <div className="w-full h-full max-w-[177.78vh] max-h-[56.25vw] aspect-video relative z-10 grid grid-cols-12 gap-8 p-4 md:p-8 lg:p-12 items-center mx-auto">
          <div className="absolute inset-0 border border-brand-gold/10 rounded-3xl shadow-[0_0_100px_rgba(0,0,0,0.8)] bg-black/20 backdrop-blur-sm pointer-events-none" />
          
-         {/* Left Side (60%) */}
-         <div className="col-span-7 h-full relative flex items-center justify-center p-4 lg:p-8">
-            <div className="relative h-[95%] w-auto aspect-[450/800] transition-transform duration-500">
+         {/* Left Side (55%) - Reduced dominance */}
+         <div className="col-span-6 h-full relative flex items-center justify-center p-4 lg:p-8">
+            <div className="relative h-[85%] w-auto aspect-[450/800] transition-transform duration-500">
                  <img src="/charging-station.png" className="h-full w-full object-contain drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]" alt="Energy Cabinet" />
                  <div className="absolute left-[8%] top-[15%] bottom-[15%] w-[0.5%] min-w-[3px] bg-brand-yellow/80 shadow-[0_0_15px_rgba(255,215,0,0.5)] flex flex-col justify-center items-center py-4 overflow-hidden">
                     <div className="whitespace-nowrap -rotate-90 text-brand-black font-bold tracking-[0.5em] text-[1.2vh] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40vh] text-center">
@@ -237,34 +282,30 @@ export default function BigScreen() {
             </div>
          </div>
 
-         {/* Right Side (40%) */}
-         <div className="col-span-5 h-full flex flex-col justify-center pl-4 lg:pl-8">
-            <div className="glass-effect rounded-2xl p-6 lg:p-10 border border-brand-gold/10 bg-brand-black/40 backdrop-blur-md shadow-2xl relative overflow-hidden flex flex-col h-[80%] justify-between">
+         {/* Right Side (45%) - Increased prominence */}
+         <div className="col-span-6 h-full flex flex-col justify-center pl-4 lg:pl-8">
+            <div className="glass-effect rounded-2xl p-6 lg:p-10 border border-brand-gold/10 bg-brand-black/40 backdrop-blur-md shadow-2xl relative overflow-hidden flex flex-col h-[90%] justify-between">
                 <div className="absolute inset-0 rounded-2xl border border-brand-gold/5 shadow-[inset_0_0_30px_rgba(255,193,7,0.02)] pointer-events-none" />
                 
                 {/* QR Code Section */}
                 <div className="flex flex-col items-center gap-[4vh] mb-4 flex-1 justify-center">
-                    <div className="w-[30vmin] h-[30vmin] bg-white rounded-xl p-3 border border-white/10 relative shrink-0 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
+                    <div className="w-[38vmin] h-[38vmin] bg-white rounded-xl p-4 border border-white/10 relative shrink-0 shadow-[0_0_30px_rgba(0,0,0,0.3)]">
                          <QRCodeSVG value={joinUrl} className="w-full h-full" />
                          <div className="absolute inset-0 border-2 border-brand-green/30 rounded-xl shadow-[0_0_15px_rgba(0,255,127,0.1)] animate-pulse pointer-events-none" />
                     </div>
                     <div className="text-center space-y-[2vh]">
-                        <div className="px-6 py-2 bg-brand-green/10 rounded-full inline-block border border-brand-green/20">
-                            <h3 className="text-brand-green font-bold text-[2vmin] tracking-widest uppercase">Scan to Charge</h3>
+                        <div className="px-8 py-3 bg-brand-green/10 rounded-full inline-block border border-brand-green/20">
+                            <h3 className="text-brand-green font-bold text-[2.5vmin] tracking-widest uppercase">扫码蓄力 | SCAN TO POWER UP</h3>
                         </div>
-                        <p className="text-brand-white text-[3vmin] font-bold leading-tight">
+                        <p className="text-brand-white text-[4vmin] font-bold leading-tight mt-4">
                             使用微信扫码<br/>
                             <span className="text-brand-text-blue">为年会注入能量</span>
                         </p>
-                        <div className="text-white/40 text-[1.2vmin] font-mono mt-2">
-                             若无法扫码，请确保手机连接同一 Wi-Fi 并手动访问：<br/>
-                             <span className="text-brand-green underline">{joinUrl}</span>
-                        </div>
                     </div>
                 </div>
 
                 {/* Live Logs */}
-                <div className="h-[35%] pt-4 lg:pt-6 border-t border-white/5 overflow-hidden">
+                <div className="h-[45%] pt-4 lg:pt-6 border-t border-white/5 overflow-hidden">
                     <LiveLogs logs={logs} />
                 </div>
             </div>
